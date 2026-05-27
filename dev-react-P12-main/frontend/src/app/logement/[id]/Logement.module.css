@@ -1,0 +1,301 @@
+.pageContainer {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 2rem 1.5rem;
+}
+
+.mainContent {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.navigationRow {
+  width: 100%;
+}
+
+.backButton {
+  font-size: 0.9rem;
+  color: #565656;
+  background: #f4f4f5;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+}
+
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: 1.6fr 0.9fr;
+  gap: 2.5rem;
+  width: 100%;
+  align-items: start;
+}
+
+.leftCol {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.collageGrid {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  height: 380px;
+}
+
+.largePicWrapper {
+  flex: 2;
+  height: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.smallPicsCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.smallPicWrapper {
+  flex: 1;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.collagePic {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.infoCard {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 3rem 2.5rem;
+  box-shadow: 0 4px 24px rgba(153, 51, 26, 0.015);
+  display: flex;
+  flex-direction: column;
+  border: 1px #F5F5F5 solid;
+}
+
+.propertyTitle {
+  font-size: 2rem;
+  font-weight: 500;
+  color: #111115;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: -0.02em;
+}
+
+.location {
+  font-size: 0.95rem;
+  color: #71717a;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 2rem 0;
+  font-weight: 500;
+}
+
+.pinIcon {
+  color: #99331A;
+}
+
+.description {
+  font-size: 0.95rem;
+  color: #3f3f46;
+  line-height: 1.6;
+  margin: 0 0 2.5rem 0;
+}
+
+.detailSection {
+  margin-bottom: 2.25rem;
+}
+
+.detailSection:last-child {
+  margin-bottom: 0;
+}
+
+.sectionHeading {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111115;
+  margin: 0 0 1rem 0;
+}
+
+.tagGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 170px);
+  gap: 0.75rem;
+}
+
+.tagBadge {
+  background: #f4f4f5;
+  color: #3f3f46;
+  padding: 0.45rem 1rem;
+  border-radius: 5px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.emptyBadge {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.rightCol {
+  position: sticky;
+  top: 6rem;
+}
+
+.hostCard {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 4px 24px rgba(153, 51, 26, 0.015);
+  display: flex;
+  flex-direction: column;
+  border: 1px #F5F5F5 solid;
+}
+
+.hostHeading {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111115;
+  margin: 0 0 1.5rem 0;
+}
+
+.hostProfileRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.hostAvatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 2px solid rgba(153, 51, 26, 0.08);
+}
+
+.hostInfoBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.hostName {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #111115;
+}
+
+.ratingBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: #f4f4f5;
+  padding: 0.5rem 0.5rem;
+  border-radius: 10px;
+  width: fit-content;
+}
+
+.starChar {
+  color: #99331A;
+  font-size: 0.95rem;
+}
+
+.ratingValue {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #111115;
+}
+
+.buttonGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ctaButton {
+  background: #99331A;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.8rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: center;
+}
+
+.ctaButton:hover {
+  background: #7a2410;
+  box-shadow: 0 4px 12px rgba(153, 51, 26, 0.15);
+}
+
+@media (max-width: 960px) {
+  .dashboardGrid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .rightCol {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .backButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .collageGrid {
+    height: 240px;
+    gap: 6px;
+  }
+
+  .smallPicsCol {
+    gap: 6px;
+  }
+
+  .propertyTitle {
+    font-size: 1.75rem;
+  }
+
+  .infoCard {
+    padding: 2rem 1.5rem;
+  }
+
+  .hostCard {
+    padding: 2rem 1.5rem;
+  }
+
+  .tagGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .tagGrid {
+    grid-template-columns: 1fr;
+  }
+}

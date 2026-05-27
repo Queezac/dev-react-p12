@@ -1,0 +1,181 @@
+.headerContainer {
+  width: 100%;
+  max-width: 1200px;
+  margin: 1.5rem auto 1rem auto;
+  padding: 0 1.5rem;
+  display: flex;
+  justify-content: center;
+  position: sticky;
+  top: 1rem;
+  z-index: 100;
+}
+
+.navCapsule {
+  width: 100%;
+  max-width: 860px;
+  height: 64px;
+  background: #ffffff;
+  border: 1px solid rgba(153, 51, 26, 0.06);
+  border-radius: 10px;
+  padding: 0 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 12px 30px rgba(153, 51, 26, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s ease;
+}
+
+.navCapsule:hover {
+  box-shadow: 0 16px 36px rgba(153, 51, 26, 0.07),
+    0 2px 5px rgba(0, 0, 0, 0.03);
+}
+
+.Links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.75rem;
+  flex: 1;
+}
+
+.navLink {
+  font-size: 0.925rem;
+  font-weight: 500;
+  color: #4b5563;
+  transition: color 0.2s ease, transform 0.2s ease;
+  position: relative;
+  padding: 0.25rem 0;
+}
+
+.navLink:hover {
+  color: #99331A;
+}
+
+.activeLink {
+  color: #99331A;
+  font-weight: 600;
+}
+
+.activeLink::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #99331A;
+}
+
+.logoWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.logoImg {
+  height: 28px;
+  width: auto;
+  display: block;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  user-select: none;
+}
+
+.logoK {
+  color: #99331A;
+  margin-right: -1px;
+}
+
+.logoHouse {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-1px);
+}
+
+.houseSvg {
+  width: 100%;
+  height: 100%;
+}
+
+.logoSa {
+  color: #99331A;
+  margin-left: -1px;
+}
+
+.addPropertyBtn {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #99331A;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.iconGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.iconLink {
+  color: #99331A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.activeIcon {
+  color: #99331A;
+}
+
+.iconSvg {
+  width: 20px;
+  height: 20px;
+}
+
+.divider {
+  font-size: 0.85rem;
+  color: #99331A;
+  font-weight: 300;
+  user-select: none;
+}
+
+@media (max-width: 768px) {
+  .headerContainer {
+    margin-top: 1rem;
+    padding: 0 1rem;
+  }
+
+  .navCapsule {
+    padding: 0 1.25rem;
+    height: 56px;
+    border-radius: 16px;
+  }
+
+  .addPropertyBtn {
+    display: none;
+  }
+
+  .logo {
+    font-size: 1.5rem;
+  }
+
+  .logoHouse {
+    width: 20px;
+    height: 20px;
+  }
+}

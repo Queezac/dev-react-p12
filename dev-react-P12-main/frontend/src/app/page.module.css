@@ -1,0 +1,169 @@
+.pageContainer {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 2rem 1.5rem;
+}
+
+.mainContent {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3.5rem;
+}
+
+.heroSection {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.heroTitle {
+  font-size: 2.75rem;
+  font-weight: 700;
+  color: #99331A;
+  margin: 0 0 0.85rem 0;
+  letter-spacing: -0.02em;
+}
+
+.heroSubtitle {
+  color: black;
+  line-height: 1.55;
+  margin: 0 0 2.5rem 0;
+}
+
+.heroImageWrapper {
+  width: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  aspect-ratio: 21 / 9;
+  box-shadow: 0 8px 30px rgba(153, 51, 26, 0.03);
+  background: #ffffff;
+}
+
+.heroImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.catalogSection {
+  width: 100%;
+}
+
+.propertiesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.5rem;
+}
+
+.howItWorksSection {
+  width: 100%;
+}
+
+.howItWorksCard {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 3.5rem 8.5rem;
+  box-shadow: 0 4px 24px rgba(153, 51, 26, 0.02);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.howItWorksTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111115;
+  margin: 0 0 1rem 0;
+}
+
+.howItWorksSubtitle {
+  font-size: 0.95rem;
+  color: #52525b;
+  max-width: 700px;
+  line-height: 1.6;
+  margin: 0 0 3rem 0;
+}
+
+.stepsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.75rem;
+  width: 100%;
+}
+
+.stepBlock {
+  background: #99331A;
+  border-radius: 10px;
+  padding: 2.5rem 2rem;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 200px;
+}
+
+.stepTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 1.25rem 0;
+}
+
+.stepDescription {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.55;
+  margin: 0;
+}
+
+
+@media (max-width: 1024px) {
+  .propertiesGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+
+  .stepsGrid {
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .heroTitle {
+    font-size: 2rem;
+  }
+
+  .heroImageWrapper {
+    aspect-ratio: 16 / 9;
+    border-radius: 18px;
+  }
+
+  .propertiesGrid {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+
+  .howItWorksCard {
+    padding: 2.5rem 1.5rem;
+    border-radius: 18px;
+  }
+
+  .stepsGrid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .stepBlock {
+    padding: 2rem 1.5rem;
+  }
+}
