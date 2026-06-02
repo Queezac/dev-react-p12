@@ -1,5 +1,6 @@
 import React from "react";
 import styles from "./page.module.css";
+import Image from "next/image";
 import { getProperties } from "@/lib/api";
 import PropertyCard from "@/components/PropertyCard/PropertyCard";
 
@@ -18,10 +19,13 @@ export default async function Home() {
           </p>
 
           <div className={styles.heroImageWrapper}>
-            <img
+            <Image
               src="/images/dune_cabin.png"
               alt="Kasa Hero Cabin"
               className={styles.heroImage}
+              fill
+              priority
+              sizes="100vw"
             />
           </div>
         </section>

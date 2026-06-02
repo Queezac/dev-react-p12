@@ -1,11 +1,26 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getPropertyById } from "@/lib/api";
 import styles from "./Logement.module.css";
+import ContactButton from "./ContactButton";
+import DeletePropertyButton from "./DeletePropertyButton";
+import PropertyGallery from "@/components/PropertyGallery/PropertyGallery";
 
 interface LogementProps {
   params: Promise<{ id: string }>;
+}
+
+function formatImageUrl(url?: string | null): string {
+  if (!url) return "/placeholder-house.jpg";
+  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
+    return url;
+  }
+  if (url.startsWith("/")) {
+    return `http://localhost:3001${url}`;
+  }
+  return url;
 }
 
 export default async function LogementPage({ params }: LogementProps) {
@@ -18,15 +33,14 @@ export default async function LogementPage({ params }: LogementProps) {
 
   const roundedRating = Math.round(property.rating_avg);
 
-  const pics = property.pictures && property.pictures.length >= 5
-    ? property.pictures
-    : [
-      property.cover,
-      ...(property.pictures || []),
-      property.cover,
-      property.cover,
-      property.cover,
-    ].slice(0, 5);
+  const uniquePics = [
+    property.cover,
+    ...(property.pictures || [])
+  ]
+    .filter((val): val is string => Boolean(val))
+    .filter((val, idx, self) => self.indexOf(val) === idx);
+
+
 
   return (
     <div className={styles.pageContainer}>
@@ -36,57 +50,18 @@ export default async function LogementPage({ params }: LogementProps) {
           <Link href="/" className={styles.backButton}>
             &larr; Retour aux annonces
           </Link>
+          <DeletePropertyButton
+            propertyId={property.id}
+            hostName={property.host?.name}
+            hostId={property.host?.id}
+          />
         </div>
 
         <div className={styles.dashboardGrid}>
 
           <div className={styles.leftCol}>
 
-            <section className={styles.collageGrid}>
-
-              <div className={styles.largePicWrapper}>
-                <img
-                  src={pics[0] || "/placeholder-house.jpg"}
-                  alt={`${property.title} - 1`}
-                  className={styles.collagePic}
-                />
-              </div>
-
-              <div className={styles.smallPicsCol}>
-                <div className={styles.smallPicWrapper}>
-                  <img
-                    src={pics[1] || "/placeholder-house.jpg"}
-                    alt={`${property.title} - 2`}
-                    className={styles.collagePic}
-                  />
-                </div>
-                <div className={styles.smallPicWrapper}>
-                  <img
-                    src={pics[2] || "/placeholder-house.jpg"}
-                    alt={`${property.title} - 3`}
-                    className={styles.collagePic}
-                  />
-                </div>
-              </div>
-
-              <div className={styles.smallPicsCol}>
-                <div className={styles.smallPicWrapper}>
-                  <img
-                    src={pics[3] || "/placeholder-house.jpg"}
-                    alt={`${property.title} - 4`}
-                    className={styles.collagePic}
-                  />
-                </div>
-                <div className={styles.smallPicWrapper}>
-                  <img
-                    src={pics[4] || "/placeholder-house.jpg"}
-                    alt={`${property.title} - 5`}
-                    className={styles.collagePic}
-                  />
-                </div>
-              </div>
-
-            </section>
+            <PropertyGallery uniquePics={uniquePics} propertyTitle={property.title} />
 
             <section className={styles.infoCard}>
               <h1 className={styles.propertyTitle}>{property.title}</h1>
@@ -137,23 +112,24 @@ export default async function LogementPage({ params }: LogementProps) {
                 <h2 className={styles.hostHeading}>Votre hôte</h2>
 
                 <div className={styles.hostProfileRow}>
-                  <img
-                    src={property.host.picture || "/placeholder-avatar.jpg"}
+                  <Image
+                    src={formatImageUrl(property.host.picture)}
                     alt={property.host.name}
                     className={styles.hostAvatar}
+                    width={80}
+                    height={80}
                   />
                   <div className={styles.hostInfoBlock}>
                     <span className={styles.hostName}>{property.host.name}</span>
                   </div>
                   <div className={styles.ratingBadge}>
                     <span className={styles.starChar}>&#9733;</span>
-                    <span className={styles.ratingValue}>{roundedRating}</span>
+                    <span className={styles.ratingValue}>{property.host.rating || roundedRating}</span>
                   </div>
                 </div>
 
                 <div className={styles.buttonGroup}>
-                  <button className={styles.ctaButton}>Contacter l&apos;hôte</button>
-                  <button className={styles.ctaButton}>Envoyer un message</button>
+                  <ContactButton />
                 </div>
 
               </section>

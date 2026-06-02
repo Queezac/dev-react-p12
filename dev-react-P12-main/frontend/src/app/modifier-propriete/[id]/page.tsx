@@ -3,14 +3,18 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import styles from "./AjoutPropriete.module.css";
+import styles from "../../ajout-propriete/AjoutPropriete.module.css";
 
-export default function AjoutProprietePage() {
+interface ModifierProprietePageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default function ModifierProprietePage({ params }: ModifierProprietePageProps) {
   const router = useRouter();
+  const { id: propertyId } = React.use(params);
 
   const [authorized, setAuthorized] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [newPropertyId, setNewPropertyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [title, setTitle] = useState("");
@@ -48,19 +52,65 @@ export default function AjoutProprietePage() {
       const parsed = JSON.parse(storedUser);
       if (parsed.role !== "owner" && parsed.role !== "admin") {
         router.push("/login");
-      } else {
-        setAuthorized(true);
-        if (parsed.name) setHostName(parsed.name);
-        if (parsed.picture) {
-          setHostPictureUrl(parsed.picture);
-          const nameOnly = parsed.picture.split('/').pop() || "";
-          setHostPictureName(nameOnly);
-        }
+        return;
       }
+      setAuthorized(true);
     } catch (e) {
       router.push("/login");
+      return;
     }
-  }, [router]);
+
+    const fetchProperty = async () => {
+      try {
+        const res = await fetch(`http://localhost:3001/api/properties/${propertyId}`);
+        if (!res.ok) {
+          throw new Error("Impossible de charger les informations de cette annonce.");
+        }
+        const data = await res.json();
+
+        setTitle(data.title || "");
+        setDescription(data.description || "");
+        setLocation(data.location || "");
+        setPrice(data.price_per_night ? String(data.price_per_night) : "");
+
+        if (data.cover) {
+          setCoverUrl(data.cover);
+          setCoverFileName(data.cover.split("/").pop() || "");
+        }
+
+        if (Array.isArray(data.pictures) && data.pictures.length > 0) {
+          setPropertyPictures(
+            data.pictures.map((url: string, index: number) => ({
+              id: String(index + 1),
+              url,
+              fileName: url.split("/").pop() || "",
+              uploading: false
+            }))
+          );
+        }
+
+        if (data.host) {
+          setHostName(data.host.name || "");
+          if (data.host.picture) {
+            setHostPictureUrl(data.host.picture);
+            setHostPictureName(data.host.picture.split("/").pop() || "");
+          }
+        }
+
+        if (Array.isArray(data.equipments)) {
+          setSelectedEquipments(data.equipments);
+        }
+
+        if (Array.isArray(data.tags)) {
+          setSelectedCategories(data.tags);
+        }
+      } catch (err: any) {
+        setError(err.message || "Impossible de charger le logement.");
+      }
+    };
+
+    fetchProperty();
+  }, [propertyId, router]);
 
   if (!authorized) {
     return (
@@ -159,7 +209,6 @@ export default function AjoutProprietePage() {
     if (input) input.click();
   };
 
-  // Categories & custom tag handlers
   const toggleCategory = (cat: string) => {
     if (selectedCategories.includes(cat)) {
       setSelectedCategories(selectedCategories.filter((item) => item !== cat));
@@ -178,7 +227,6 @@ export default function AjoutProprietePage() {
     setCustomTagInput("");
   };
 
-  // Equipments handlers
   const toggleEquipment = (eq: string) => {
     if (selectedEquipments.includes(eq)) {
       setSelectedEquipments(selectedEquipments.filter((item) => item !== eq));
@@ -239,8 +287,8 @@ export default function AjoutProprietePage() {
         tags: selectedCategories
       };
 
-      const res = await fetch("http://localhost:3001/api/properties", {
-        method: "POST",
+      const res = await fetch(`http://localhost:3001/api/properties/${propertyId}`, {
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
@@ -250,51 +298,14 @@ export default function AjoutProprietePage() {
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || "Impossible d'enregistrer la propriété.");
+        throw new Error(errData.error || "Impossible de mettre à jour la propriété.");
       }
 
-      const newProperty = await res.json();
-      window.location.href = `/logement/${newProperty.id}`;
+      window.location.href = `/logement/${propertyId}`;
     } catch (err: any) {
       setError(err.message || "Une erreur est survenue lors de l'enregistrement de l'annonce.");
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  };
-
-  const handleReset = () => {
-    setSubmitted(false);
-    setNewPropertyId(null);
-    setError(null);
-    setTitle("");
-    setDescription("");
-    setZip("");
-    setLocation("");
-    setPrice("");
-
-    setCoverUrl("");
-    setCoverFileName("");
-    setCoverUploading(false);
-
-    setPropertyPictures([{ id: "1", url: "", fileName: "", uploading: false }]);
-
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        const parsed = JSON.parse(storedUser);
-        setHostName(parsed.name || "");
-        if (parsed.picture) {
-          setHostPictureUrl(parsed.picture);
-          setHostPictureName(parsed.picture.split('/').pop() || "");
-        } else {
-          setHostPictureUrl("");
-          setHostPictureName("");
-        }
-      } catch (_) { }
-    }
-
-    setSelectedCategories([]);
-    setSelectedEquipments([]);
-    setCustomTagInput("");
   };
 
   const equipmentsLeft = [
@@ -317,7 +328,7 @@ export default function AjoutProprietePage() {
       <main className={styles.mainContent}>
 
         <div className={styles.navigationRow}>
-          <Link href="/" className={styles.backButton}>
+          <Link href={`/logement/${propertyId}`} className={styles.backButton}>
             &larr; Retour
           </Link>
         </div>
@@ -329,27 +340,25 @@ export default function AjoutProprietePage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0110.5 21a3.745 3.745 0 01-3.068-1.593 3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0110.5 3a3.745 3.745 0 013.068 1.593 3.746 3.746 0 013.296 1.043 3.745 3.745 0 011.043 3.296A3.745 3.745 0 0121 12z" />
               </svg>
             </div>
-            <h2>Propriété ajoutée avec succès !</h2>
-            <p>Votre annonce a bien été enregistrée et est disponible immédiatement dans notre catalogue.</p>
+            <h2>Propriété modifiée avec succès !</h2>
+            <p>Votre annonce a bien été mise à jour et est disponible immédiatement dans notre catalogue.</p>
 
             <div className={styles.successActions}>
-              {newPropertyId && (
-                <Link href={`/logement/${newPropertyId}`} className={styles.viewAdBtn}>
-                  Voir mon annonce
-                </Link>
-              )}
-              <button onClick={handleReset} className={styles.resetBtn}>
-                Ajouter une autre propriété
-              </button>
+              <Link href={`/logement/${propertyId}`} className={styles.viewAdBtn}>
+                Voir mon annonce
+              </Link>
+              <Link href="/" className={styles.resetBtn}>
+                Retour à l'accueil
+              </Link>
             </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className={styles.formContainer}>
 
             <div className={styles.titleRow}>
-              <h1 className={styles.pageTitle}>Ajouter une propriété</h1>
+              <h1 className={styles.pageTitle}>Modifier la propriété</h1>
               <button type="submit" className={styles.submitBtn}>
-                Ajouter
+                Enregistrer
               </button>
             </div>
 

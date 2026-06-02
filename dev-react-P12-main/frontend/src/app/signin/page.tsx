@@ -13,7 +13,7 @@ export default function SigninPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!lastName || !firstName || !email || !password) {
       setError("Veuillez remplir tous les champs obligatoires.");
@@ -24,7 +24,30 @@ export default function SigninPage() {
       return;
     }
     setError("");
-    setSuccess(true);
+
+    try {
+      const res = await fetch("http://localhost:3001/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: `${firstName} ${lastName}`,
+          email: email.trim(),
+          password: password,
+          role: "client"
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Une erreur est survenue lors de l'inscription.");
+      }
+
+      setSuccess(true);
+    } catch (err: any) {
+      setError(err.message || "Une erreur est survenue lors de l'inscription.");
+    }
   };
 
   return (

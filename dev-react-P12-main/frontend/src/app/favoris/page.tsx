@@ -1,12 +1,72 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./Favoris.module.css";
 import { getProperties } from "@/lib/api";
 import PropertyCard from "@/components/PropertyCard/PropertyCard";
+import { PropertySummary } from "@/lib/types";
+import { getFavoriteIds } from "@/lib/favorites";
 
-export default async function FavorisPage() {
-  const { properties, isOffline } = await getProperties();
+export default function FavorisPage() {
+  const router = useRouter();
+  const [authorized, setAuthorized] = useState(false);
+  const [properties, setProperties] = useState<PropertySummary[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const favoriteProperties = properties.slice(0, 3);
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      router.push("/login");
+      return;
+    }
+    try {
+      const parsed = JSON.parse(storedUser);
+      if (parsed) {
+        setAuthorized(true);
+      } else {
+        router.push("/login");
+        return;
+      }
+    } catch (e) {
+      router.push("/login");
+      return;
+    }
+
+    setFavoriteIds(getFavoriteIds());
+
+    const handleUpdate = () => {
+      setFavoriteIds(getFavoriteIds());
+    };
+    window.addEventListener("favorites-updated", handleUpdate);
+
+    getProperties()
+      .then((data) => {
+        setProperties(data.properties);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setLoading(false);
+      });
+
+    return () => {
+      window.removeEventListener("favorites-updated", handleUpdate);
+    };
+  }, [router]);
+
+  if (!authorized || loading) {
+    return (
+      <div style={{ minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        Chargement...
+      </div>
+    );
+  }
+
+  const favoriteProperties = properties.filter((property) =>
+    favoriteIds.includes(property.id)
+  );
 
   return (
     <div className={styles.container}>
@@ -20,16 +80,10 @@ export default async function FavorisPage() {
           </p>
         </section>
 
-        {isOffline && (
-          <div className={styles.offlineAlert}>
-            <span>Mode Hors ligne : Affichage des favoris locaux sauvegardés.</span>
-          </div>
-        )}
-
         {favoriteProperties.length === 0 ? (
           <div className={styles.emptyState}>
             <h3>Aucun favori enregistré</h3>
-            <p>Parcourez notre catalogue et cliquez sur le cœur de n&apos;importe quel logement pour le sauvegarder ici.</p>
+            <p>Parcourez notre catalogue et ajoutez les en favoris pour les retrouver ici.</p>
           </div>
         ) : (
           <section className={styles.gridSection}>

@@ -46,6 +46,7 @@
   aspect-ratio: 21 / 9;
   box-shadow: 0 8px 30px rgba(153, 51, 26, 0.03);
   background: #ffffff;
+  position: relative;
 }
 
 .heroImage {

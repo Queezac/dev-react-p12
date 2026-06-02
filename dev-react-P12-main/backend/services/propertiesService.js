@@ -10,7 +10,7 @@ function mapPropertyRow(row) {
     price_per_night: row.price_per_night,
     rating_avg: row.rating_avg,
     ratings_count: row.ratings_count,
-    host: row.host_id ? { id: row.host_id, name: row.host_name, picture: row.host_picture } : undefined,
+    host: row.host_id ? { id: row.host_id, name: row.host_name, picture: row.host_picture, rating: row.host_rating || 5.0 } : undefined,
   };
 }
 
@@ -39,7 +39,7 @@ async function ensureUniqueSlug(db, base, excludeId = null) {
 
 async function listProperties(db) {
   const rows = await db.allAsync(`
-      SELECT p.*, u.name AS host_name, u.picture AS host_picture
+      SELECT p.*, u.name AS host_name, u.picture AS host_picture, u.rating AS host_rating
       FROM properties p
       JOIN users u ON u.id = p.host_id
       ORDER BY p.title ASC
@@ -49,7 +49,7 @@ async function listProperties(db) {
 
 async function getPropertyDetails(db, id) {
   const row = await db.getAsync(`
-    SELECT p.*, u.name AS host_name, u.picture AS host_picture
+    SELECT p.*, u.name AS host_name, u.picture AS host_picture, u.rating AS host_rating
     FROM properties p
     JOIN users u ON u.id = p.host_id
     WHERE p.id = ?
@@ -155,18 +155,47 @@ async function updateProperty(db, id, changes) {
     params.push(newSlug);
   }
 
-  if (fields.length === 0) {
+  const hasSubLists = ('pictures' in (changes || {})) || ('equipments' in (changes || {})) || ('tags' in (changes || {}));
+
+  if (fields.length === 0 && !hasSubLists) {
     const err = new Error('No fields to update');
     err.status = 400;
     throw err;
   }
-  params.push(id);
-  const r = await db.runAsync(`UPDATE properties SET ${fields.join(', ')} WHERE id = ?`, params);
-  if (r.changes === 0) {
-    const err = new Error('Property not found');
-    err.status = 404;
-    throw err;
+
+  if (fields.length > 0) {
+    params.push(id);
+    const exists = await db.getAsync('SELECT id FROM properties WHERE id = ?', [id]);
+    if (!exists) {
+      const err = new Error('Property not found');
+      err.status = 404;
+      throw err;
+    }
+    await db.runAsync(`UPDATE properties SET ${fields.join(', ')} WHERE id = ?`, params);
   }
+
+  // Update associated lists if provided in changes payload
+  if (Array.isArray(changes.pictures)) {
+    await db.runAsync('DELETE FROM property_pictures WHERE property_id = ?', [id]);
+    for (const url of changes.pictures) {
+      if (url) await db.runAsync('INSERT OR IGNORE INTO property_pictures(property_id, url) VALUES (?,?)', [id, url]);
+    }
+  }
+
+  if (Array.isArray(changes.equipments)) {
+    await db.runAsync('DELETE FROM property_equipments WHERE property_id = ?', [id]);
+    for (const name of changes.equipments) {
+      if (name) await db.runAsync('INSERT OR IGNORE INTO property_equipments(property_id, name) VALUES (?,?)', [id, name]);
+    }
+  }
+
+  if (Array.isArray(changes.tags)) {
+    await db.runAsync('DELETE FROM property_tags WHERE property_id = ?', [id]);
+    for (const name of changes.tags) {
+      if (name) await db.runAsync('INSERT OR IGNORE INTO property_tags(property_id, name) VALUES (?,?)', [id, name]);
+    }
+  }
+
   return await getPropertyDetails(db, id);
 }
 

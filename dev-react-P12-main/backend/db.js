@@ -34,6 +34,7 @@ async function initSchema(db) {
     role TEXT NOT NULL CHECK (role IN ('owner','client','admin')),
     email TEXT,
     password_hash TEXT,
+    rating REAL DEFAULT 5.0,
     UNIQUE(name, picture),
     UNIQUE(email)
   );
@@ -121,6 +122,9 @@ async function initSchema(db) {
     if (!names.has('reset_expires')) {
       await db.runAsync('ALTER TABLE users ADD COLUMN reset_expires INTEGER');
     }
+    if (!names.has('rating')) {
+      await db.runAsync('ALTER TABLE users ADD COLUMN rating REAL DEFAULT 5.0');
+    }
   } catch (e) {
     // ignore
   }
@@ -145,6 +149,19 @@ async function initSchema(db) {
         await db.runAsync('UPDATE properties SET slug = ? WHERE id = ?', [slug, row.id]);
       }
       await db.runAsync('CREATE UNIQUE INDEX IF NOT EXISTS idx_properties_slug ON properties(slug)');
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  // Randomize ratings for owners for realistic host scores
+  try {
+    const owners = await db.allAsync("SELECT id, rating FROM users WHERE role = 'owner'");
+    for (const o of owners) {
+      if (!o.rating || o.rating === 5.0) {
+        const randomRating = (3.8 + Math.random() * 1.2).toFixed(1);
+        await db.runAsync("UPDATE users SET rating = ? WHERE id = ?", [randomRating, o.id]);
+      }
     }
   } catch (e) {
     // ignore

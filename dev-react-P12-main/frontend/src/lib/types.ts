@@ -2,6 +2,7 @@ export interface Host {
   id?: number;
   name: string;
   picture: string | null;
+  rating?: number;
 }
 
 export interface PropertySummary {

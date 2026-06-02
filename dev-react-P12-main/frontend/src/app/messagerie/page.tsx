@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import styles from "./Messagerie.module.css";
 
 interface ChatItem {
@@ -22,6 +23,26 @@ interface Message {
 }
 
 export default function MessageriePage() {
+  const router = useRouter();
+  const [authorized, setAuthorized] = useState(false);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      router.push("/login");
+      return;
+    }
+    try {
+      const parsed = JSON.parse(storedUser);
+      if (parsed) {
+        setAuthorized(true);
+      } else {
+        router.push("/login");
+      }
+    } catch (e) {
+      router.push("/login");
+    }
+  }, [router]);
 
   const [chats, setChats] = useState<ChatItem[]>([
     { id: "1", name: "Utilisateur", lastMessage: "Bonjour, votre appartement est-il disp...", time: "11:04 am", unread: true },
@@ -90,6 +111,14 @@ export default function MessageriePage() {
   ]);
 
   const [inputText, setInputText] = useState("");
+
+  if (!authorized) {
+    return (
+      <div style={{ minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        Chargement...
+      </div>
+    );
+  }
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
