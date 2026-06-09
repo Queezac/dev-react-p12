@@ -1,5 +1,11 @@
 import React from "react";
 import styles from "./APropos.module.css";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "À propos - Kasa",
+  description: "Découvrez notre mission, nos valeurs d'authenticité et de partage, et comment Kasa connecte voyageurs et hôtes.",
+};
 
 export default function AProposPage() {
   return (

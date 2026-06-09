@@ -247,3 +247,24 @@
     height: 40px;
   }
 }
+
+@media (max-width: 480px) {
+  .collageGrid {
+    height: 180px;
+    gap: 4px;
+  }
+
+  .smallPicsCol {
+    gap: 4px;
+  }
+
+  .navBtn {
+    width: 38px;
+    height: 38px;
+  }
+
+  .closeBtn {
+    width: 36px;
+    height: 36px;
+  }
+}

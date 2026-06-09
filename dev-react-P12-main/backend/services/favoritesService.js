@@ -5,7 +5,6 @@ async function addFavorite(db, userId, propertyId) {
   const prop = await db.getAsync('SELECT id FROM properties WHERE id = ?', [propertyId]);
   if (!prop) { const err = new Error('Property not found'); err.status = 404; throw err; }
 
-  // Ensure user exists (defensive); if not, will also fail on FK
   const user = await db.getAsync('SELECT id FROM users WHERE id = ?', [userId]);
   if (!user) { const err = new Error('User not found'); err.status = 404; throw err; }
 

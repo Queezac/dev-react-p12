@@ -56,6 +56,7 @@ export default function MessageriePage() {
   ]);
 
   const [activeChatId, setActiveChatId] = useState("1");
+  const [isMobileChatActive, setIsMobileChatActive] = useState(false);
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -140,7 +141,7 @@ export default function MessageriePage() {
     <div className={styles.container}>
       <main className={styles.inboxLayout}>
 
-        <section className={styles.sidebar}>
+        <section className={`${styles.sidebar} ${isMobileChatActive ? styles.mobileHidden : ""}`}>
 
           <div className={styles.sidebarHeader}>
             <Link href="/" className={styles.backButton}>
@@ -153,7 +154,10 @@ export default function MessageriePage() {
             {chats.map((chat) => (
               <button
                 key={chat.id}
-                onClick={() => setActiveChatId(chat.id)}
+                onClick={() => {
+                  setActiveChatId(chat.id);
+                  setIsMobileChatActive(true);
+                }}
                 className={`${styles.chatItem} ${chat.id === activeChatId ? styles.chatItemActive : ""}`}
               >
                 <div className={styles.avatarSquare}></div>
@@ -177,7 +181,26 @@ export default function MessageriePage() {
 
         </section>
 
-        <section className={styles.chatWindow}>
+        <section className={`${styles.chatWindow} ${!isMobileChatActive ? styles.mobileHidden : ""}`}>
+
+          <div className={styles.chatHeader}>
+            <button
+              onClick={() => setIsMobileChatActive(false)}
+              className={styles.mobileBackBtn}
+              aria-label="Retour aux messages"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+              <span>Retour</span>
+            </button>
+            <div className={styles.activeChatUserInfo}>
+              <div className={styles.chatAvatarSquareSmall}></div>
+              <span className={styles.activeChatName}>
+                {chats.find(c => c.id === activeChatId)?.name || "Conversation"}
+              </span>
+            </div>
+          </div>
 
           <div className={styles.messageArea}>
             {messages.map((msg) => {

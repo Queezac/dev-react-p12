@@ -518,13 +518,26 @@
     text-align: center;
   }
 
-  .formCard {
+  .formCard,
+  .formCardRight {
     padding: 2rem 1.5rem;
   }
 
   .checkboxGrid {
     grid-template-columns: 1fr;
     gap: 0.85rem;
+  }
+
+  .successActions {
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .viewAdBtn,
+  .resetBtn {
+    width: 100%;
+    text-align: center;
   }
 }
 

@@ -338,6 +338,48 @@
   height: 20px;
 }
 
+.chatHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 2.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  background: #ffffff;
+  min-height: 64px;
+}
+
+.mobileBackBtn {
+  display: none;
+  align-items: center;
+  gap: 0.25rem;
+  background: none;
+  border: none;
+  color: #99331A;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.activeChatUserInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.chatAvatarSquareSmall {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background-color: #e4e4e7;
+}
+
+.activeChatName {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #111115;
+}
+
 @media (max-width: 992px) {
   .inboxLayout {
     height: 700px;
@@ -358,32 +400,47 @@
   }
 
   .inboxLayout {
-    flex-direction: column;
-    height: auto;
+    flex-direction: row;
+    height: 600px;
     border-radius: 12px;
   }
 
   .sidebar {
     width: 100%;
-    height: 320px;
+    height: 100%;
     border-right: none;
-    border-bottom: 1px solid rgba(153, 51, 26, 0.06);
+    border-bottom: none;
   }
 
   .chatWindow {
-    height: 480px;
+    width: 100%;
+    height: 100%;
+  }
+
+  .chatHeader {
+    padding: 1rem 1.25rem;
+    min-height: 56px;
+  }
+
+  .mobileBackBtn {
+    display: flex;
+  }
+
+  .mobileHidden {
+    display: none !important;
   }
 
   .messageArea {
-    padding: 1.5rem;
+    padding: 1.5rem 1.25rem;
   }
 
   .inputAreaContainer {
-    padding: 1rem;
+    padding: 1rem 1.25rem;
   }
 
   .inputFormBox {
     min-height: 100px;
+    padding: 0.85rem;
   }
 
   .textAreaField {

@@ -4,12 +4,24 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET || 'change-me-in-prod';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
+/**
+ * Hache un mot de passe en utilisant scrypt et un sel généré ou fourni.
+ * @param {string} password - Le mot de passe en clair.
+ * @param {string|null} [salt=null] - Le sel facultatif (généré aléatoirement si null).
+ * @returns {string} Le hash au format `scrypt:salt:hash`.
+ */
 function hashPassword(password, salt = null) {
   if (!salt) salt = crypto.randomBytes(16).toString('hex');
   const hash = crypto.scryptSync(password, salt, 64).toString('hex');
   return `scrypt:${salt}:${hash}`;
 }
 
+/**
+ * Vérifie si le mot de passe en clair correspond au mot de passe haché stocké.
+ * @param {string} password - Le mot de passe en clair à vérifier.
+ * @param {string} stored - Le mot de passe haché stocké (format `scrypt:salt:hash`).
+ * @returns {boolean} True si le mot de passe correspond, sinon false.
+ */
 function verifyPassword(password, stored) {
   if (!stored || typeof stored !== 'string') return false;
   const parts = stored.split(':');
@@ -20,11 +32,27 @@ function verifyPassword(password, stored) {
   return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(expected, 'hex'));
 }
 
+/**
+ * Génère un jeton JWT contenant les données de l'utilisateur.
+ * @param {Object} user - L'objet utilisateur.
+ * @returns {string} Le jeton JWT signé.
+ */
 function signToken(user) {
   const payload = { id: user.id, role: user.role, name: user.name, email: user.email || null };
   return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 }
 
+/**
+ * Enregistre un nouvel utilisateur dans la base de données.
+ * @param {Object} db - Instance de la base de données.
+ * @param {Object} params - Les paramètres d'inscription.
+ * @param {string} params.name - Nom complet de l'utilisateur.
+ * @param {string} params.email - Adresse email.
+ * @param {string} params.password - Mot de passe en clair.
+ * @param {string|null} [params.picture=null] - URL de l'image de profil.
+ * @param {string} [params.role='client'] - Rôle ('owner' ou 'client').
+ * @returns {Promise<{token: string, user: Object}>} Objet contenant le token JWT et l'utilisateur.
+ */
 async function register(db, { name, email, password, picture = null, role = 'client' }) {
   if (!name) {
     const err = new Error('name is required'); err.status = 400; throw err;
@@ -35,7 +63,7 @@ async function register(db, { name, email, password, picture = null, role = 'cli
   if (!password || String(password).length < 6) {
     const err = new Error('password must be at least 6 characters'); err.status = 400; throw err;
   }
-  if (!['owner','client'].includes(role)) role = 'client';
+  if (!['owner', 'client'].includes(role)) role = 'client';
   const password_hash = hashPassword(String(password));
   try {
     const r = await db.runAsync('INSERT INTO users(name, email, password_hash, picture, role) VALUES (?,?,?,?,?)', [name, email, password_hash, picture, role]);
@@ -48,6 +76,14 @@ async function register(db, { name, email, password, picture = null, role = 'cli
   }
 }
 
+/**
+ * Connecte un utilisateur en vérifiant ses identifiants.
+ * @param {Object} db - Instance de la base de données.
+ * @param {Object} params - Les identifiants.
+ * @param {string} params.email - Adresse email.
+ * @param {string} params.password - Mot de passe en clair.
+ * @returns {Promise<{token: string, user: Object}>} Token JWT et informations publiques de l'utilisateur.
+ */
 async function login(db, { email, password }) {
   if (!email || !password) { const err = new Error('email and password are required'); err.status = 400; throw err; }
   const user = await db.getAsync('SELECT id, name, email, picture, role, password_hash FROM users WHERE email = ?', [email]);
@@ -59,20 +95,37 @@ async function login(db, { email, password }) {
   return { token, user: publicUser };
 }
 
+/**
+ * Génère un jeton de réinitialisation de mot de passe et l'enregistre en base de données.
+ * @param {Object} db - Instance de la base de données.
+ * @param {Object} params - Paramètres.
+ * @param {string} params.email - Adresse email.
+ * @returns {Promise<{ok: boolean, message: string, token: string}>} Résultat avec jeton généré.
+ */
 async function requestPasswordReset(db, { email }) {
   if (!email) { const err = new Error('email is required'); err.status = 400; throw err; }
   const user = await db.getAsync('SELECT id, email FROM users WHERE email = ?', [email]);
-  // Always respond with success to avoid user enumeration
-  const token = crypto.randomBytes(32).toString('hex');
-  const expires = Date.now() + 60 * 60 * 1000; // 1 hour
-  if (user) {
-    await db.runAsync('UPDATE users SET reset_token = ?, reset_expires = ? WHERE id = ?', [token, expires, user.id]);
+  if (!user) {
+    const err = new Error("Cet email n'existe pas dans notre base de données.");
+    err.status = 404;
+    throw err;
   }
-  const resp = { ok: true, message: 'If the email exists, a reset link has been sent.' };
-  if (process.env.NODE_ENV !== 'production') resp.token = token;
-  return resp;
+
+  const token = crypto.randomBytes(32).toString('hex');
+  const expires = Date.now() + 60 * 60 * 1000;
+  await db.runAsync('UPDATE users SET reset_token = ?, reset_expires = ? WHERE id = ?', [token, expires, user.id]);
+
+  return { ok: true, message: 'Reset token generated.', token: token };
 }
 
+/**
+ * Réinitialise le mot de passe d'un utilisateur si le jeton est valide.
+ * @param {Object} db - Instance de la base de données.
+ * @param {Object} params - Les paramètres.
+ * @param {string} params.token - Le jeton de réinitialisation.
+ * @param {string} params.password - Le nouveau mot de passe.
+ * @returns {Promise<{ok: boolean}>} Statut de réussite.
+ */
 async function resetPassword(db, { token, password }) {
   if (!token || !password) { const err = new Error('token and password are required'); err.status = 400; throw err; }
   if (String(password).length < 6) { const err = new Error('password must be at least 6 characters'); err.status = 400; throw err; }

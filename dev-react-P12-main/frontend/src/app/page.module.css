@@ -140,8 +140,20 @@
 }
 
 @media (max-width: 768px) {
+  .pageContainer {
+    padding: 1.5rem 1rem;
+  }
+
+  .mainContent {
+    gap: 2.5rem;
+  }
+
   .heroTitle {
     font-size: 2rem;
+  }
+
+  .heroSubtitle {
+    margin-bottom: 1.5rem;
   }
 
   .heroImageWrapper {

@@ -7,6 +7,7 @@ import styles from "./Logement.module.css";
 import ContactButton from "./ContactButton";
 import DeletePropertyButton from "./DeletePropertyButton";
 import PropertyGallery from "@/components/PropertyGallery/PropertyGallery";
+import { Metadata } from "next";
 
 interface LogementProps {
   params: Promise<{ id: string }>;
@@ -21,6 +22,35 @@ function formatImageUrl(url?: string | null): string {
     return `http://localhost:3001${url}`;
   }
   return url;
+}
+
+export async function generateMetadata({ params }: LogementProps): Promise<Metadata> {
+  const { id } = await params;
+  try {
+    const { property } = await getPropertyById(id);
+    if (!property) {
+      return {
+        title: "Logement non trouvé - Kasa",
+      };
+    }
+    const title = `${property.title} - Kasa`;
+    const description = property.description
+      ? property.description.substring(0, 160) + "..."
+      : `Découvrez cet hébergement exceptionnel à ${property.location || 'Kasa'} proposé par ${property.host?.name || 'son hôte'}.`;
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        images: property.cover ? [{ url: formatImageUrl(property.cover) }] : [],
+      },
+    };
+  } catch (e) {
+    return {
+      title: "Logement - Kasa",
+    };
+  }
 }
 
 export default async function LogementPage({ params }: LogementProps) {
@@ -40,10 +70,45 @@ export default async function LogementPage({ params }: LogementProps) {
     .filter((val): val is string => Boolean(val))
     .filter((val, idx, self) => self.indexOf(val) === idx);
 
-
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Accommodation",
+    "name": property.title,
+    "description": property.description || "",
+    "image": formatImageUrl(property.cover),
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": property.location || "France",
+    },
+    "amenityFeature": property.equipments.map((eq: string) => ({
+      "@type": "LocationFeatureSpecification",
+      "name": eq,
+      "value": true
+    })),
+    "offers": {
+      "@type": "Offer",
+      "price": property.price_per_night,
+      "priceCurrency": "EUR",
+      "category": "per night",
+      "availability": "https://schema.org/InStock"
+    },
+    ...(property.rating_avg > 0 ? {
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": property.rating_avg,
+        "bestRating": "5",
+        "worstRating": "1",
+        "ratingCount": property.ratings_count || 1
+      }
+    } : {})
+  };
 
   return (
     <div className={styles.pageContainer}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <main className={styles.mainContent}>
 
         <div className={styles.navigationRow}>

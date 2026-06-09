@@ -43,18 +43,18 @@ export default function ModifierProprietePage({ params }: ModifierProprietePageP
   const [previewModalUrl, setPreviewModalUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (!storedUser) {
-      router.push("/login");
-      return;
-    }
+    let parsed: any = null;
     try {
-      const parsed = JSON.parse(storedUser);
+      const storedUser = localStorage.getItem("user");
+      if (!storedUser) {
+        router.push("/login");
+        return;
+      }
+      parsed = JSON.parse(storedUser);
       if (parsed.role !== "owner" && parsed.role !== "admin") {
         router.push("/login");
         return;
       }
-      setAuthorized(true);
     } catch (e) {
       router.push("/login");
       return;
@@ -67,6 +67,17 @@ export default function ModifierProprietePage({ params }: ModifierProprietePageP
           throw new Error("Impossible de charger les informations de cette annonce.");
         }
         const data = await res.json();
+
+        // Check ownership/admin authorization
+        const isAdmin = parsed && parsed.role === "admin";
+        const isHost = parsed && data.host && (String(parsed.id) === String(data.host.id) || parsed.name === data.host.name);
+
+        if (!isAdmin && !isHost) {
+          router.push("/");
+          return;
+        }
+
+        setAuthorized(true);
 
         setTitle(data.title || "");
         setDescription(data.description || "");

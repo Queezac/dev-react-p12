@@ -5,6 +5,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import styles from "./Header.module.css";
 
+/**
+ * Composant d'en-tête (Header) de l'application.
+ * Contient la navigation principale, le logo de Kasa et gère l'affichage dynamique
+ * des boutons liés à l'utilisateur connecté (favoris, messagerie, déconnexion...).
+ */
 export default function Header() {
   const pathname = usePathname();
   const [user, setUser] = React.useState<{ name: string; role: string } | null>(null);

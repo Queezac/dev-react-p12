@@ -1,5 +1,3 @@
-// Test suite for favorites management
-
 function runTests(favoritesLib) {
   const { getFavoriteIds, isFavorite, addFavorite, removeFavorite, toggleFavorite } = favoritesLib;
 

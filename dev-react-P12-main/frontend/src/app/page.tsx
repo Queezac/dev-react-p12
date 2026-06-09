@@ -3,13 +3,53 @@ import styles from "./page.module.css";
 import Image from "next/image";
 import { getProperties } from "@/lib/api";
 import PropertyCard from "@/components/PropertyCard/PropertyCard";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Kasa - Location de logements entre particuliers",
+  description: "Trouvez votre hébergement idéal parmi des milliers de logements uniques, chaleureux et sélectionnés avec soin.",
+};
+
+function formatImageUrl(url?: string | null): string {
+  if (!url) return "http://localhost:3000/placeholder-house.jpg";
+  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
+    return url;
+  }
+  if (url.startsWith("/")) {
+    return `http://localhost:3001${url}`;
+  }
+  return url;
+}
 
 export default async function Home() {
-
   const { properties } = await getProperties();
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Catalogue de logements Kasa",
+    "itemListElement": properties.map((prop, idx) => ({
+      "@type": "ListItem",
+      "position": idx + 1,
+      "item": {
+        "@type": "Accommodation",
+        "url": `http://localhost:3000/logement/${prop.id}`,
+        "name": prop.title,
+        "image": formatImageUrl(prop.cover),
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": prop.location || "France"
+        }
+      }
+    }))
+  };
 
   return (
     <div className={styles.pageContainer}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <main className={styles.mainContent}>
 
         <section className={styles.heroSection}>

@@ -13,6 +13,11 @@ interface PropertyCardProps {
   initialLiked?: boolean;
 }
 
+/**
+ * Formate l'URL d'une image pour s'assurer qu'elle pointe vers le bon domaine ou un placeholder local.
+ * @param {string|null} url - L'URL brute de l'image.
+ * @returns {string} L'URL formatée prête à l'affichage.
+ */
 function formatImageUrl(url?: string | null): string {
   if (!url) return "/placeholder-house.jpg";
   if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
@@ -24,6 +29,14 @@ function formatImageUrl(url?: string | null): string {
   return url;
 }
 
+/**
+ * Composant représentant une carte de logement individuelle dans le catalogue.
+ * Affiche la couverture, le titre, le prix par nuit et gère l'ajout/suppression des favoris.
+ * 
+ * @param {PropertyCardProps} props - Les propriétés du composant.
+ * @param {PropertySummary} props.property - Les données résumées du logement.
+ * @param {boolean} [props.initialLiked=false] - L'état d'activation initial du bouton favori.
+ */
 export default function PropertyCard({ property, initialLiked = false }: PropertyCardProps) {
   const [isLiked, setIsLiked] = useState(initialLiked);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
