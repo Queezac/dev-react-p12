@@ -3,21 +3,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import styles from "./PropertyGallery.module.css";
+import { formatImageUrl, getNextIndex, getPrevIndex } from "@/lib/galleryLogic";
 
 interface PropertyGalleryProps {
   uniquePics: string[];
   propertyTitle: string;
-}
-
-function formatImageUrl(url?: string | null): string {
-  if (!url) return "/placeholder-house.jpg";
-  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
-    return url;
-  }
-  if (url.startsWith("/")) {
-    return `http://localhost:3001${url}`;
-  }
-  return url;
 }
 
 export default function PropertyGallery({ uniquePics, propertyTitle }: PropertyGalleryProps) {
@@ -39,12 +29,12 @@ export default function PropertyGallery({ uniquePics, propertyTitle }: PropertyG
 
   const handleNext = useCallback(() => {
     if (len === 0) return;
-    setCurrentIndex((prev) => (prev + 1) % len);
+    setCurrentIndex((prev) => getNextIndex(prev, len));
   }, [len]);
 
   const handlePrev = useCallback(() => {
     if (len === 0) return;
-    setCurrentIndex((prev) => (prev - 1 + len) % len);
+    setCurrentIndex((prev) => getPrevIndex(prev, len));
   }, [len]);
 
   useEffect(() => {

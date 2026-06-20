@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import styles from "./Login.module.css";
+import { getBackendOrigin } from "@/lib/config";
 
 type ViewState = "login" | "forgot_password" | "reset_password";
 
@@ -28,7 +29,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:3001/auth/login", {
+      const res = await fetch(`${getBackendOrigin()}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -64,7 +65,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:3001/auth/request-reset", {
+      const res = await fetch(`${getBackendOrigin()}/auth/request-reset`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -106,7 +107,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:3001/auth/reset-password", {
+      const res = await fetch(`${getBackendOrigin()}/auth/reset-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

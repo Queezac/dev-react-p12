@@ -70,14 +70,19 @@
   width: 100%;
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
-  gap: 4.5rem;
+  grid-template-rows: auto auto;
+  row-gap: 2rem;
+  column-gap: 4.5rem;
   align-items: center;
 }
 
-.textContentCol {
+.missionHeaderCol {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  grid-column: 1;
+  grid-row: 1;
+  align-self: end;
 }
 
 .missionTitle {
@@ -109,10 +114,15 @@
   color: #99331A;
   line-height: 1.6;
   margin: 0;
+  grid-column: 1;
+  grid-row: 2;
+  align-self: start;
 }
 
 .imageCol {
   width: 100%;
+  grid-column: 2;
+  grid-row: 1 / span 2;
 }
 
 .sideImageWrapper {
@@ -148,7 +158,29 @@
 
   .missionSplitSection {
     grid-template-columns: 1fr;
-    gap: 3rem;
+    grid-template-rows: auto auto auto;
+    row-gap: 2rem;
+    column-gap: 0;
+  }
+
+  .missionHeaderCol {
+    grid-column: 1;
+    grid-row: 1;
+    order: 1;
+    align-self: auto;
+  }
+
+  .imageCol {
+    grid-column: 1;
+    grid-row: 2;
+    order: 2;
+  }
+
+  .missionFooterText {
+    grid-column: 1;
+    grid-row: 3;
+    order: 3;
+    align-self: auto;
   }
 
   .sideImageWrapper {

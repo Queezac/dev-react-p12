@@ -1,7 +1,6 @@
 const fs = require("fs");
 const path = require("path");
 
-// Mock browser global environment
 const mockStorage = {};
 global.localStorage = {
   getItem: (key) => mockStorage[key] || null,
@@ -14,45 +13,56 @@ global.window = {
   dispatchEvent: () => { },
 };
 global.Event = class Event { };
+global.getBackendOrigin = () => "http://localhost:3001";
 
-// Read and transpile TS to JS on the fly for lightweight node execution
-const tsPath = path.join(__dirname, "../src/lib/favorites.ts");
-const tsCode = fs.readFileSync(tsPath, "utf-8");
+function transpileAndRun(tsFilename, testFilename, exportsArray) {
+  const tsPath = path.join(__dirname, "../src/lib", tsFilename);
+  const tsCode = fs.readFileSync(tsPath, "utf-8");
 
-// Strip TypeScript annotations
-let jsCode = tsCode
-  .replace(/export function/g, "function")
-  .replace(/:\s*string\[\]/g, "")
-  .replace(/:\s*string/g, "")
-  .replace(/:\s*boolean/g, "")
-  .replace(/:\s*any/g, "");
+  let jsCode = tsCode
+    .replace(/import\s+[\s\S]*?\s+from\s+['"].*?['"];?/g, "")
+    .replace(/export function/g, "function")
+    .replace(/\?\s*:/g, ":")
+    .replace(/:\s*string\[\s*\]/g, "")
+    .replace(/:\s*string\s*\|\s*null/g, "")
+    .replace(/:\s*string/g, "")
+    .replace(/:\s*boolean/g, "")
+    .replace(/:\s*number/g, "")
+    .replace(/:\s*any/g, "");
 
-// Append Node.js module exports
-jsCode += `
-module.exports = {
-  getFavoriteIds,
-  isFavorite,
-  toggleFavorite,
-  addFavorite,
-  removeFavorite
-};
-`;
+  jsCode += `\nmodule.exports = { ${exportsArray.join(", ")} };\n`;
 
-// Save to temporary file to allow require()
-const tempPath = path.join(__dirname, "temp-favorites.js");
-fs.writeFileSync(tempPath, jsCode, "utf-8");
+  const tempPath = path.join(__dirname, `temp-${tsFilename.replace(".ts", ".js")}`);
+  fs.writeFileSync(tempPath, jsCode, "utf-8");
+
+  try {
+    const libObj = require(tempPath);
+    const testPath = path.join(__dirname, "../src/lib", testFilename);
+    const { runTests } = require(testPath);
+    runTests(libObj);
+  } finally {
+    if (fs.existsSync(tempPath)) {
+      fs.unlinkSync(tempPath);
+    }
+  }
+}
 
 try {
-  // Load and execute the tests!
-  const favoritesLib = require(tempPath);
-  const { runTests } = require("../src/lib/favorites.test.js");
-  runTests(favoritesLib);
+  transpileAndRun(
+    "favorites.ts",
+    "favorites.test.js",
+    ["getFavoriteIds", "isFavorite", "toggleFavorite", "addFavorite", "removeFavorite"]
+  );
+
+  transpileAndRun(
+    "galleryLogic.ts",
+    "galleryLogic.test.js",
+    ["formatImageUrl", "getNextIndex", "getPrevIndex"]
+  );
+
+  console.log("\x1b[All test suites completed successfully!\x1b[0m\n");
+  process.exit(0);
 } catch (e) {
-  console.error("\x1b[31m💥 Fatal Error running tests:\x1b[0m", e.message);
+  console.error("\x1b[Fatal Error running tests:\x1b[0m", e.message);
   process.exit(1);
-} finally {
-  // Clean up the temporary transpiled file
-  if (fs.existsSync(tempPath)) {
-    fs.unlinkSync(tempPath);
-  }
 }

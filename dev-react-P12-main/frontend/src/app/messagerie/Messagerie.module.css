@@ -278,12 +278,14 @@
 
 .inputFormBox {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
   border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 16px;
+  border-radius: 30px;
   background: #ffffff;
-  min-height: 140px;
-  padding: 1.25rem;
+  padding: 0.4rem 0.4rem 0.4rem 1.5rem;
+  min-height: auto;
+  height: 52px;
   position: relative;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -303,8 +305,11 @@
   color: #111115;
   background: transparent;
   width: 100%;
-  height: 100%;
-  min-height: 80px;
+  height: 24px;
+  line-height: 24px;
+  padding: 0;
+  display: flex;
+  align-items: center;
 }
 
 .textAreaField::placeholder {
@@ -312,20 +317,18 @@
 }
 
 .sendSquareBtn {
-  position: absolute;
-  bottom: 1rem;
-  right: 1rem;
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   background: #99331A;
   color: #ffffff;
   border: none;
-  border-radius: 8px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .sendSquareBtn:hover {
@@ -348,17 +351,8 @@
   min-height: 64px;
 }
 
-.mobileBackBtn {
+.chatHeaderBackButton {
   display: none;
-  align-items: center;
-  gap: 0.25rem;
-  background: none;
-  border: none;
-  color: #99331A;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0;
 }
 
 .activeChatUserInfo {
@@ -396,13 +390,16 @@
 
 @media (max-width: 768px) {
   .container {
-    padding: 1.5rem 0.75rem 4rem 0.75rem;
+    padding: 1.5rem 0.75rem;
   }
 
   .inboxLayout {
     flex-direction: row;
-    height: 600px;
-    border-radius: 12px;
+    height: calc(100vh - 120px);
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    background: transparent;
   }
 
   .sidebar {
@@ -418,12 +415,34 @@
   }
 
   .chatHeader {
-    padding: 1rem 1.25rem;
-    min-height: 56px;
+    padding: 1rem 0;
+    min-height: auto;
+    border-bottom: none;
+    background: transparent;
   }
 
-  .mobileBackBtn {
-    display: flex;
+  .chatHeaderBackButton {
+    display: inline-flex;
+    align-items: center;
+    background: #f4f4f5;
+    color: #565656;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.5rem 1.25rem;
+    border-radius: 30px;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(0, 0, 0, 0.02);
+    cursor: pointer;
+  }
+
+  .chatHeaderBackButton:hover {
+    background: #e4e4e7;
+    transform: translateX(-2px);
+  }
+
+  .activeChatUserInfo {
+    display: none;
   }
 
   .mobileHidden {
@@ -431,19 +450,33 @@
   }
 
   .messageArea {
-    padding: 1.5rem 1.25rem;
+    padding: 1.5rem 0;
+    background: #FFFBF9;
   }
 
   .inputAreaContainer {
-    padding: 1rem 1.25rem;
+    padding: 1rem 0 1.5rem 0;
+    background: transparent;
   }
 
   .inputFormBox {
-    min-height: 100px;
-    padding: 0.85rem;
+    height: 46px;
+    padding: 0.25rem 0.25rem 0.25rem 1.25rem;
   }
 
   .textAreaField {
-    min-height: 50px;
+    height: 20px;
+    line-height: 20px;
+    font-size: 0.9rem;
+  }
+
+  .sendSquareBtn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .arrowIcon {
+    width: 18px;
+    height: 18px;
   }
 }

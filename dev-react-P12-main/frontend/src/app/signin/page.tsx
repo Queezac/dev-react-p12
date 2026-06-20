@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import styles from "./Signin.module.css";
+import { getBackendOrigin } from "@/lib/config";
 
 export default function SigninPage() {
   const [lastName, setLastName] = useState("");
@@ -26,7 +27,7 @@ export default function SigninPage() {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:3001/auth/register", {
+      const res = await fetch(`${getBackendOrigin()}/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,5 +1,17 @@
 import { PropertySummary, PropertyDetails } from "./types";
-const API_BASE_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+import { getApiBaseUrl } from "./config";
+const API_BASE_URL = getApiBaseUrl();
+
+/**
+ * Retourne les en-têtes de requête avec le jeton de contournement de la protection Vercel si disponible.
+ */
+function getFetchHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {};
+  if (process.env.VERCEL_AUTOMATION_BYPASS_SECRET) {
+    headers["x-vercel-protection-bypass"] = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+  }
+  return headers;
+}
 
 /**
  * Récupère tous les logements à partir de l'API backend.
@@ -8,6 +20,7 @@ const API_BASE_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "
 export async function getProperties(): Promise<{ properties: PropertySummary[]; isOffline: boolean }> {
   const res = await fetch(`${API_BASE_URL}/properties`, {
     cache: "no-store",
+    headers: getFetchHeaders(),
   });
 
   if (!res.ok) {
@@ -26,6 +39,7 @@ export async function getProperties(): Promise<{ properties: PropertySummary[]; 
 export async function getPropertyById(id: string): Promise<{ property: PropertyDetails | null; isOffline: boolean }> {
   const res = await fetch(`${API_BASE_URL}/properties/${id}`, {
     cache: "no-store",
+    headers: getFetchHeaders(),
   });
 
   if (!res.ok) {

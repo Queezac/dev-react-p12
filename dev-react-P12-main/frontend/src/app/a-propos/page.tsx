@@ -34,16 +34,13 @@ export default function AProposPage() {
 
         <section className={styles.missionSplitSection}>
 
-          <div className={styles.textContentCol}>
+          <div className={styles.missionHeaderCol}>
             <h2 className={styles.missionTitle}>Notre mission est simple :</h2>
             <ul className={styles.missionList}>
               <li>1. Offrir une plateforme fiable et simple d&apos;utilisation</li>
               <li>2. Proposer des hébergements variés et de qualité</li>
               <li>3. Favoriser les échanges humains et chaleureux entre hôtes et voyageurs</li>
             </ul>
-            <p className={styles.missionFooterText}>
-              Que vous cherchiez un appartement cosy en centre-ville, une maison en bord de mer ou un chalet à la montagne, Kasa vous accompagne pour que chaque séjour devienne un souvenir inoubliable.
-            </p>
           </div>
 
           <div className={styles.imageCol}>
@@ -55,6 +52,10 @@ export default function AProposPage() {
               />
             </div>
           </div>
+
+          <p className={styles.missionFooterText}>
+            Que vous cherchiez un appartement cosy en centre-ville, une maison en bord de mer ou un chalet à la montagne, Kasa vous accompagne pour que chaque séjour devienne un souvenir inoubliable.
+          </p>
 
         </section>
 

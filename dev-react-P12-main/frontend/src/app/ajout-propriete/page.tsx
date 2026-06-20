@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "./AjoutPropriete.module.css";
+import { getApiBaseUrl } from "@/lib/config";
+import { formatImageUrl } from "@/lib/galleryLogic";
 
 export default function AjoutProprietePage() {
   const router = useRouter();
@@ -92,7 +94,7 @@ export default function AjoutProprietePage() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:3001/api/uploads/image", {
+      const res = await fetch(`${getApiBaseUrl()}/uploads/image`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`
@@ -239,7 +241,7 @@ export default function AjoutProprietePage() {
         tags: selectedCategories
       };
 
-      const res = await fetch("http://localhost:3001/api/properties", {
+      const res = await fetch(`${getApiBaseUrl()}/properties`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -687,11 +689,7 @@ export default function AjoutProprietePage() {
               &times;
             </button>
             <img
-              src={
-                previewModalUrl.startsWith("/")
-                  ? `http://localhost:3001${previewModalUrl}`
-                  : previewModalUrl
-              }
+              src={formatImageUrl(previewModalUrl)}
               alt="Prévisualisation"
               className={styles.previewModalImg}
             />

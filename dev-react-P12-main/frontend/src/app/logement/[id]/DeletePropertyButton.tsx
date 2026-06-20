@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "./Logement.module.css";
+import { getApiBaseUrl } from "@/lib/config";
 
 interface DeletePropertyButtonProps {
   propertyId: string;
@@ -40,7 +41,7 @@ export default function DeletePropertyButton({ propertyId, hostName, hostId }: D
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:3001/api/properties/${propertyId}`, {
+      const res = await fetch(`${getApiBaseUrl()}/properties/${propertyId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`

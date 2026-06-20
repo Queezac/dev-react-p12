@@ -7,8 +7,21 @@ const DB_PATH = path.join(__dirname, 'data', 'kasa.sqlite3');
 const PROPS_JSON_PATH = path.join(__dirname, 'data', 'properties.json');
 
 function openDb() {
-  const db = new sqlite3.Database(DB_PATH);
-  // Promisify helpers
+  let activeDbPath = DB_PATH;
+  if (process.env.VERCEL === "1") {
+    const tmpPath = path.join('/tmp', 'kasa.sqlite3');
+    try {
+      if (!fs.existsSync(tmpPath)) {
+        fs.copyFileSync(DB_PATH, tmpPath);
+      }
+      activeDbPath = tmpPath;
+    } catch (e) {
+      console.error("Failed to copy database to /tmp:", e);
+    }
+  }
+
+  const db = new sqlite3.Database(activeDbPath);
+
   db.runAsync = function (sql, params = []) {
     return new Promise((resolve, reject) => {
       this.run(sql, params, function (err) {
@@ -104,7 +117,6 @@ async function initSchema(db) {
 
   await db.execAsync(schema);
 
-  // Ensure auth columns exist for old DBs created before email/password/reset fields
   try {
     const cols = await db.allAsync("PRAGMA table_info('users')");
     const names = new Set(cols.map(c => c.name));
@@ -126,16 +138,15 @@ async function initSchema(db) {
       await db.runAsync('ALTER TABLE users ADD COLUMN rating REAL DEFAULT 5.0');
     }
   } catch (e) {
-    // ignore
+
   }
 
-  // Ensure slug column exists and is populated for properties
   try {
     const pcols = await db.allAsync("PRAGMA table_info('properties')");
     const pnames = new Set(pcols.map(c => c.name));
     if (!pnames.has('slug')) {
       await db.runAsync('ALTER TABLE properties ADD COLUMN slug TEXT');
-      // Backfill slugs from titles
+
       const rows = await db.allAsync('SELECT id, title FROM properties');
       const used = new Set();
       for (const row of rows) {
@@ -151,10 +162,9 @@ async function initSchema(db) {
       await db.runAsync('CREATE UNIQUE INDEX IF NOT EXISTS idx_properties_slug ON properties(slug)');
     }
   } catch (e) {
-    // ignore
+
   }
 
-  // Randomize ratings for owners for realistic host scores
   try {
     const owners = await db.allAsync("SELECT id, rating FROM users WHERE role = 'owner'");
     for (const o of owners) {
@@ -164,16 +174,15 @@ async function initSchema(db) {
       }
     }
   } catch (e) {
-    // ignore
+
   }
 }
 
 function deterministicPrice(idOrTitle) {
-  // Simple deterministic hash to get price between 45 and 300
   const s = String(idOrTitle);
   let h = 0;
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
-  return 45 + (h % 256); // 45..300
+  return 45 + (h % 256);
 }
 
 function slugify(input) {
@@ -184,7 +193,7 @@ function slugify(input) {
 
 async function seedIfEmpty(db) {
   const row = await db.getAsync('SELECT COUNT(*) as c FROM properties');
-  if (row && row.c > 0) return; // already seeded
+  if (row && row.c > 0) return;
 
   if (!fs.existsSync(PROPS_JSON_PATH)) return;
   const raw = fs.readFileSync(PROPS_JSON_PATH, 'utf-8');
@@ -204,14 +213,12 @@ async function seedIfEmpty(db) {
           const hostName = p.host && p.host.name ? p.host.name : 'Unknown';
           const hostPic = p.host && p.host.picture ? p.host.picture : null;
 
-          // Ensure owner user exists
           let user = await db.getAsync('SELECT id FROM users WHERE name = ? AND IFNULL(picture, "") = IFNULL(?, "")', [hostName, hostPic]);
           if (!user) {
             const ins = await db.runAsync('INSERT INTO users(name, picture, role) VALUES (?,?,?)', [hostName, hostPic, 'owner']);
             user = { id: ins.lastID };
           }
 
-          // Prepare slug
           const base = slugify(p.title || p.id || hostName);
           let slug = base;
           let n = 2;
@@ -220,7 +227,6 @@ async function seedIfEmpty(db) {
           }
           usedSlugs.add(slug);
 
-          // Insert property
           const price = deterministicPrice(p.id || p.title || hostName);
           const ratingAvg = p.rating ? Number(p.rating) : 0;
           await db.runAsync(
@@ -228,7 +234,6 @@ async function seedIfEmpty(db) {
             [p.id, p.title, slug, p.description || null, p.cover || null, p.location || null, user.id, ratingAvg, price]
           );
 
-          // Pictures (ensure cover included)
           const pics = new Set();
           if (p.cover) pics.add(p.cover);
           if (Array.isArray(p.pictures)) p.pictures.forEach(u => u && pics.add(u));
@@ -236,14 +241,12 @@ async function seedIfEmpty(db) {
             await db.runAsync('INSERT OR IGNORE INTO property_pictures(property_id, url) VALUES (?,?)', [p.id, url]);
           }
 
-          // Equipments
           if (Array.isArray(p.equipments)) {
             for (const name of p.equipments) {
               await db.runAsync('INSERT OR IGNORE INTO property_equipments(property_id, name) VALUES (?,?)', [p.id, name]);
             }
           }
 
-          // Tags
           if (Array.isArray(p.tags)) {
             for (const name of p.tags) {
               await db.runAsync('INSERT OR IGNORE INTO property_tags(property_id, name) VALUES (?,?)', [p.id, name]);

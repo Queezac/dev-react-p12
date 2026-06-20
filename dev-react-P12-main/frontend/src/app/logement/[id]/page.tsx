@@ -8,20 +8,10 @@ import ContactButton from "./ContactButton";
 import DeletePropertyButton from "./DeletePropertyButton";
 import PropertyGallery from "@/components/PropertyGallery/PropertyGallery";
 import { Metadata } from "next";
+import { formatImageUrl } from "@/lib/galleryLogic";
 
 interface LogementProps {
   params: Promise<{ id: string }>;
-}
-
-function formatImageUrl(url?: string | null): string {
-  if (!url) return "/placeholder-house.jpg";
-  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
-    return url;
-  }
-  if (url.startsWith("/")) {
-    return `http://localhost:3001${url}`;
-  }
-  return url;
 }
 
 export async function generateMetadata({ params }: LogementProps): Promise<Metadata> {

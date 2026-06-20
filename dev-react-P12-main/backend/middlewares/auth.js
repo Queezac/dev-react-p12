@@ -10,7 +10,7 @@ function authenticate(req, res, next) {
       const payload = jwt.verify(token, JWT_SECRET);
       req.user = { id: payload.id, role: payload.role, name: payload.name, email: payload.email };
     } catch (e) {
-      // invalid token -> ignore for authenticate(), but requireAuth will block
+
     }
   }
   next();

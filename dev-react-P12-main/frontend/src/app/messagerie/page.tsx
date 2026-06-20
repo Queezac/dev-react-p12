@@ -186,13 +186,10 @@ export default function MessageriePage() {
           <div className={styles.chatHeader}>
             <button
               onClick={() => setIsMobileChatActive(false)}
-              className={styles.mobileBackBtn}
+              className={styles.chatHeaderBackButton}
               aria-label="Retour aux messages"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
-                <polyline points="15 18 9 12 15 6"></polyline>
-              </svg>
-              <span>Retour</span>
+              ← Retour
             </button>
             <div className={styles.activeChatUserInfo}>
               <div className={styles.chatAvatarSquareSmall}></div>

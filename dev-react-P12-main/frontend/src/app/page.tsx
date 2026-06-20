@@ -4,25 +4,18 @@ import Image from "next/image";
 import { getProperties } from "@/lib/api";
 import PropertyCard from "@/components/PropertyCard/PropertyCard";
 import { Metadata } from "next";
+import { formatImageUrl } from "@/lib/galleryLogic";
+import { getFrontendOrigin } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "Kasa - Location de logements entre particuliers",
   description: "Trouvez votre hébergement idéal parmi des milliers de logements uniques, chaleureux et sélectionnés avec soin.",
 };
 
-function formatImageUrl(url?: string | null): string {
-  if (!url) return "http://localhost:3000/placeholder-house.jpg";
-  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
-    return url;
-  }
-  if (url.startsWith("/")) {
-    return `http://localhost:3001${url}`;
-  }
-  return url;
-}
-
 export default async function Home() {
   const { properties } = await getProperties();
+
+  const frontendOrigin = getFrontendOrigin();
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -33,7 +26,7 @@ export default async function Home() {
       "position": idx + 1,
       "item": {
         "@type": "Accommodation",
-        "url": `http://localhost:3000/logement/${prop.id}`,
+        "url": `${frontendOrigin}/logement/${prop.id}`,
         "name": prop.title,
         "image": formatImageUrl(prop.cover),
         "address": {

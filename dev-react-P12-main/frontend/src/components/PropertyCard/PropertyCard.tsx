@@ -7,26 +7,11 @@ import { PropertySummary } from "@/lib/types";
 import styles from "./PropertyCard.module.css";
 
 import { isFavorite, toggleFavorite } from "@/lib/favorites";
+import { formatImageUrl } from "@/lib/galleryLogic";
 
 interface PropertyCardProps {
   property: PropertySummary;
   initialLiked?: boolean;
-}
-
-/**
- * Formate l'URL d'une image pour s'assurer qu'elle pointe vers le bon domaine ou un placeholder local.
- * @param {string|null} url - L'URL brute de l'image.
- * @returns {string} L'URL formatée prête à l'affichage.
- */
-function formatImageUrl(url?: string | null): string {
-  if (!url) return "/placeholder-house.jpg";
-  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
-    return url;
-  }
-  if (url.startsWith("/")) {
-    return `http://localhost:3001${url}`;
-  }
-  return url;
 }
 
 /**

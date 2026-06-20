@@ -504,6 +504,31 @@
     grid-template-columns: 1fr;
     gap: 2rem;
   }
+
+  .leftCol,
+  .rightCol {
+    display: contents;
+  }
+
+  .leftCol > div:nth-child(1) {
+    order: 1;
+  }
+
+  .rightCol > div:nth-child(1) {
+    order: 2;
+  }
+
+  .rightCol > div:nth-child(2) {
+    order: 3;
+  }
+
+  .leftCol > div:nth-child(2) {
+    order: 4;
+  }
+
+  .rightCol > div:nth-child(3) {
+    order: 5;
+  }
 }
 
 @media (max-width: 768px) {

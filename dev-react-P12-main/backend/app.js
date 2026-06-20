@@ -11,7 +11,6 @@ const { initialize } = require('./db');
 
 const app = express();
 
-// Middleware CORS pour autoriser le frontend (port 3000)
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
@@ -29,13 +28,15 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Initialize database and expose via app.locals
-initialize().then((db) => {
+const dbPromise = initialize().then((db) => {
   app.locals.db = db;
   console.log('Database initialized');
+  return db;
 }).catch((err) => {
   console.error('Database initialization failed:', err);
+  throw err;
 });
+app.locals.dbPromise = dbPromise;
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);

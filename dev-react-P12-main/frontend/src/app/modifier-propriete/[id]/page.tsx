@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "../../ajout-propriete/AjoutPropriete.module.css";
+import { getApiBaseUrl } from "@/lib/config";
+import { formatImageUrl } from "@/lib/galleryLogic";
 
 interface ModifierProprietePageProps {
   params: Promise<{ id: string }>;
@@ -62,7 +64,7 @@ export default function ModifierProprietePage({ params }: ModifierProprietePageP
 
     const fetchProperty = async () => {
       try {
-        const res = await fetch(`http://localhost:3001/api/properties/${propertyId}`);
+        const res = await fetch(`${getApiBaseUrl()}/properties/${propertyId}`);
         if (!res.ok) {
           throw new Error("Impossible de charger les informations de cette annonce.");
         }
@@ -153,7 +155,7 @@ export default function ModifierProprietePage({ params }: ModifierProprietePageP
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:3001/api/uploads/image", {
+      const res = await fetch(`${getApiBaseUrl()}/uploads/image`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`
@@ -298,7 +300,7 @@ export default function ModifierProprietePage({ params }: ModifierProprietePageP
         tags: selectedCategories
       };
 
-      const res = await fetch(`http://localhost:3001/api/properties/${propertyId}`, {
+      const res = await fetch(`${getApiBaseUrl()}/properties/${propertyId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -707,11 +709,7 @@ export default function ModifierProprietePage({ params }: ModifierProprietePageP
               &times;
             </button>
             <img
-              src={
-                previewModalUrl.startsWith("/")
-                  ? `http://localhost:3001${previewModalUrl}`
-                  : previewModalUrl
-              }
+              src={formatImageUrl(previewModalUrl)}
               alt="Prévisualisation"
               className={styles.previewModalImg}
             />
