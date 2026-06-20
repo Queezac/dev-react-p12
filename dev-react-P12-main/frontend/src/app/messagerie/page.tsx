@@ -239,6 +239,7 @@ export default function MessageriePage() {
           <div className={styles.inputAreaContainer}>
             <form onSubmit={handleSendMessage} className={styles.inputFormBox}>
               <textarea
+                aria-label="Écrire un message"
                 placeholder="Envoyer un message"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}

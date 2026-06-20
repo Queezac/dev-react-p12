@@ -426,30 +426,38 @@ export default function AjoutProprietePage() {
                   <h2 className={styles.sectionHeading}>Équipements</h2>
                   <div className={styles.checkboxGrid}>
                     <div className={styles.checkboxCol}>
-                      {equipmentsLeft.map((eq, idx) => (
-                        <label key={idx} className={styles.checkboxLabel}>
-                          <input
-                            type="checkbox"
-                            className={styles.checkboxInput}
-                            checked={selectedEquipments.includes(eq)}
-                            onChange={() => toggleEquipment(eq)}
-                          />
-                          <span>{eq}</span>
-                        </label>
-                      ))}
+                      {equipmentsLeft.map((eq, idx) => {
+                        const inputId = `eq-left-${idx}`;
+                        return (
+                          <label key={idx} className={styles.checkboxLabel} htmlFor={inputId}>
+                            <input
+                              type="checkbox"
+                              id={inputId}
+                              className={styles.checkboxInput}
+                              checked={selectedEquipments.includes(eq)}
+                              onChange={() => toggleEquipment(eq)}
+                            />
+                            <span>{eq}</span>
+                          </label>
+                        );
+                      })}
                     </div>
                     <div className={styles.checkboxCol}>
-                      {equipmentsRight.map((eq, idx) => (
-                        <label key={idx} className={styles.checkboxLabel}>
-                          <input
-                            type="checkbox"
-                            className={styles.checkboxInput}
-                            checked={selectedEquipments.includes(eq)}
-                            onChange={() => toggleEquipment(eq)}
-                          />
-                          <span>{eq}</span>
-                        </label>
-                      ))}
+                      {equipmentsRight.map((eq, idx) => {
+                        const inputId = `eq-right-${idx}`;
+                        return (
+                          <label key={idx} className={styles.checkboxLabel} htmlFor={inputId}>
+                            <input
+                              type="checkbox"
+                              id={inputId}
+                              className={styles.checkboxInput}
+                              checked={selectedEquipments.includes(eq)}
+                              onChange={() => toggleEquipment(eq)}
+                            />
+                            <span>{eq}</span>
+                          </label>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -458,10 +466,12 @@ export default function AjoutProprietePage() {
               <div className={styles.rightCol}>
                 <div className={styles.formCardRight}>
                   <div className={styles.inputGroup}>
-                    <label className={styles.inputLabel}>Image de couverture</label>
+                    <label className={styles.inputLabel} htmlFor="cover-file-input">Image de couverture</label>
                     <div className={styles.inputWithButtonRow}>
                       <input
                         type="text"
+                        id="cover-text-input"
+                        aria-label="Nom du fichier de l'image de couverture"
                         className={`${styles.textInput} ${coverUrl ? styles.clickableInput : ""}`}
                         readOnly
                         placeholder={coverUploading ? "Téléversement..." : "Cliquez sur + pour charger une image"}
@@ -501,12 +511,14 @@ export default function AjoutProprietePage() {
                   </div>
 
                   <div className={styles.inputGroup}>
-                    <label className={styles.inputLabel}>Images du logement</label>
+                    <label className={styles.inputLabel} htmlFor={`file-input-${propertyPictures[0]?.id}`}>Images du logement</label>
                     <div className={styles.propertyPicsContainer}>
                       {propertyPictures.map((pic) => (
                         <div key={pic.id} className={styles.inputWithButtonRow}>
                           <input
                             type="text"
+                            id={`pic-text-input-${pic.id}`}
+                            aria-label={`Nom du fichier de l'image du logement ${pic.id}`}
                             className={`${styles.textInput} ${pic.url ? styles.clickableInput : ""}`}
                             readOnly
                             placeholder={pic.uploading ? "Téléversement..." : "Cliquez sur + pour charger une image"}
@@ -517,6 +529,7 @@ export default function AjoutProprietePage() {
                           <input
                             type="file"
                             id={`file-input-${pic.id}`}
+                            aria-label={`Téléverser l'image du logement ${pic.id}`}
                             accept="image/*"
                             style={{ display: "none" }}
                             onChange={(e) => {
@@ -573,10 +586,12 @@ export default function AjoutProprietePage() {
                   </div>
 
                   <div className={styles.inputGroup}>
-                    <label className={styles.inputLabel}>Photo de profil</label>
+                    <label className={styles.inputLabel} htmlFor="host-file-input">Photo de profil</label>
                     <div className={styles.inputWithButtonRow}>
                       <input
                         type="text"
+                        id="host-picture-text-input"
+                        aria-label="Nom du fichier de la photo de profil"
                         className={`${styles.textInput} ${hostPictureUrl ? styles.clickableInput : ""}`}
                         readOnly
                         placeholder={hostPictureUploading ? "Téléversement..." : "Cliquez sur + pour charger une image"}
@@ -636,10 +651,11 @@ export default function AjoutProprietePage() {
                   </div>
 
                   <div className={styles.inputGroup}>
-                    <label className={styles.inputLabel}>Ajouter une catégorie personnalisée</label>
+                    <label className={styles.inputLabel} htmlFor="custom-tag-input">Ajouter une catégorie personnalisée</label>
                     <div className={styles.inputWithButtonRow}>
                       <input
                         type="text"
+                        id="custom-tag-input"
                         className={styles.textInput}
                         placeholder="Nouveau tag"
                         value={customTagInput}
