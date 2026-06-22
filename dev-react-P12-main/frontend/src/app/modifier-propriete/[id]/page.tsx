@@ -70,7 +70,6 @@ export default function ModifierProprietePage({ params }: ModifierProprietePageP
         }
         const data = await res.json();
 
-        // Check ownership/admin authorization
         const isAdmin = parsed && parsed.role === "admin";
         const isHost = parsed && data.host && (String(parsed.id) === String(data.host.id) || parsed.name === data.host.name);
 

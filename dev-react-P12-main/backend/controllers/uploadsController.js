@@ -8,32 +8,52 @@ async function uploadImage(req, res) {
   } catch (e) {
     return res.status(500).json({ error: 'Upload not available: missing dependency (multer)' });
   }
-  const uploadDir = path.join(__dirname, '..', 'public', 'uploads');
-  try { fs.mkdirSync(uploadDir, { recursive: true }); } catch (_) {}
 
-  const storage = multer.diskStorage({
-    destination: function (req, file, cb) { cb(null, uploadDir); },
-    filename: function (req, file, cb) {
-      const ext = path.extname(file && file.originalname ? file.originalname : '').toLowerCase();
-      const base = Date.now() + '-' + Math.random().toString(16).slice(2, 10);
-      cb(null, base + ext);
-    }
-  });
+  const uploadDir = path.join(__dirname, '..', 'public', 'uploads');
+  const useMemoryStorage = process.env.VERCEL === "1";
+
+  if (!useMemoryStorage) {
+    try { fs.mkdirSync(uploadDir, { recursive: true }); } catch (_) { }
+  }
+
+  const storage = useMemoryStorage
+    ? multer.memoryStorage()
+    : multer.diskStorage({
+      destination: function (req, file, cb) { cb(null, uploadDir); },
+      filename: function (req, file, cb) {
+        const ext = path.extname(file && file.originalname ? file.originalname : '').toLowerCase();
+        const base = Date.now() + '-' + Math.random().toString(16).slice(2, 10);
+        cb(null, base + ext);
+      }
+    });
+
   const fileFilter = function (req, file, cb) {
     if (file && file.mimetype && file.mimetype.startsWith('image/')) return cb(null, true);
     cb(new Error('Only image files are allowed'));
   };
+
   const upload = multer({ storage, fileFilter, limits: { fileSize: 10 * 1024 * 1024 } }).single('file');
 
   upload(req, res, async function (err) {
     if (err) return res.status(400).json({ error: err.message });
     if (!req.file) return res.status(400).json({ error: 'file is required (field name "file")' });
 
-    // Optional metadata to clarify the intent of this image
-    const purpose = (req.body && String(req.body.purpose || '').toLowerCase()) || null; // property-cover | property-picture | user-picture | other
+    let publicUrl;
+    let filename;
+
+    if (useMemoryStorage) {
+      const base64 = req.file.buffer.toString('base64');
+      publicUrl = `data:${req.file.mimetype};base64,${base64}`;
+      const ext = path.extname(req.file.originalname || '').toLowerCase();
+      filename = Date.now() + '-' + Math.random().toString(16).slice(2, 10) + ext;
+    } else {
+      publicUrl = '/uploads/' + req.file.filename;
+      filename = req.file.filename;
+    }
+
+    const purpose = (req.body && String(req.body.purpose || '').toLowerCase()) || null;
     const propertyId = req.body && req.body.property_id ? String(req.body.property_id) : null;
 
-    // If a property_id is provided, ensure it exists (for better UX)
     if (propertyId) {
       try {
         const db = req.app.locals.db;
@@ -44,8 +64,6 @@ async function uploadImage(req, res) {
       }
     }
 
-    // Build a simple guidance message for the client
-    const publicUrl = '/uploads/' + req.file.filename;
     let instructions = 'Upload successful. Use the returned URL where appropriate.';
     if (purpose === 'property-cover') {
       instructions = propertyId
@@ -62,7 +80,7 @@ async function uploadImage(req, res) {
 
     res.status(201).json({
       url: publicUrl,
-      filename: req.file.filename,
+      filename: filename,
       size: req.file.size,
       mimetype: req.file.mimetype,
       purpose: purpose,
@@ -74,14 +92,19 @@ async function uploadImage(req, res) {
 
 async function deleteImages(req, res) {
   const uploadDir = path.join(__dirname, '..', 'public', 'uploads');
-  try { fs.mkdirSync(uploadDir, { recursive: true }); } catch (_) {}
+  const useMemoryStorage = process.env.VERCEL === "1";
+
+  if (!useMemoryStorage) {
+    try { fs.mkdirSync(uploadDir, { recursive: true }); } catch (_) { }
+  }
 
   function toFilename(item) {
     if (!item) return null;
     const s = String(item);
-    // Accept either "/uploads/filename.jpg" or just "filename.jpg"
+    if (s.startsWith('data:')) {
+      return s;
+    }
     const base = s.includes('/uploads/') ? s.split('/uploads/').pop() : path.basename(s);
-    // Reject path traversal
     if (base.includes('..') || base.includes('/') || base.includes('\\')) return null;
     return base;
   }
@@ -91,7 +114,7 @@ async function deleteImages(req, res) {
   if (req.body && Array.isArray(req.body.urls)) inputs = inputs.concat(req.body.urls);
   if (req.body && typeof req.body.filename === 'string') inputs.push(req.body.filename);
   if (req.body && typeof req.body.url === 'string') inputs.push(req.body.url);
-  // Also support comma-separated query ?filenames=a.jpg,b.png
+
   if (typeof req.query.filenames === 'string') inputs = inputs.concat(req.query.filenames.split(','));
   if (typeof req.query.filename === 'string') inputs.push(req.query.filename);
   if (typeof req.query.urls === 'string') inputs = inputs.concat(req.query.urls.split(','));
@@ -110,36 +133,51 @@ async function deleteImages(req, res) {
 
   const db = req.app.locals.db;
   for (const name of filenames) {
-    const full = path.join(uploadDir, name);
+    const isDataUri = name && name.startsWith('data:');
+    const full = isDataUri ? null : path.join(uploadDir, name);
     try {
+      if (isDataUri) {
+        deleted.push(name);
+        results.push({ filename: name, status: 'deleted' });
+
+        try {
+          await db.runAsync('DELETE FROM property_pictures WHERE url = ?', [name]);
+        } catch (_) { }
+        try {
+          await db.runAsync('UPDATE properties SET cover = NULL WHERE cover = ?', [name]);
+        } catch (_) { }
+        try {
+          await db.runAsync('UPDATE users SET picture = NULL WHERE picture = ?', [name]);
+        } catch (_) { }
+        continue;
+      }
+
       if (!fs.existsSync(full)) {
         not_found.push(name);
         results.push({ filename: name, status: 'not_found' });
         continue;
       }
-      // Unlink file
       fs.unlinkSync(full);
       deleted.push(name);
       results.push({ filename: name, status: 'deleted' });
 
       const url = '/uploads/' + name;
-      // Clean references in DB (best-effort)
       try {
         await db.runAsync('DELETE FROM property_pictures WHERE url = ?', [url]);
-      } catch (_) {}
+      } catch (_) { }
       try {
         await db.runAsync('UPDATE properties SET cover = NULL WHERE cover = ?', [url]);
-      } catch (_) {}
+      } catch (_) { }
       try {
         await db.runAsync('UPDATE users SET picture = NULL WHERE picture = ?', [url]);
-      } catch (_) {}
+      } catch (_) { }
     } catch (e) {
       errors.push({ filename: name, error: e.message });
       results.push({ filename: name, status: 'error', error: e.message });
     }
   }
 
-  const status = errors.length === 0 ? 200 : (deleted.length > 0 ? 207 : 400); // 207 Multi-Status when partial
+  const status = errors.length === 0 ? 200 : (deleted.length > 0 ? 207 : 400);
   return res.status(status).json({ ok: errors.length === 0, deleted, not_found, errors, results });
 }
 
