@@ -42,6 +42,10 @@ export async function getPropertyById(id: string): Promise<{ property: PropertyD
     headers: getFetchHeaders(),
   });
 
+  if (res.status === 404) {
+    return { property: null, isOffline: false };
+  }
+
   if (!res.ok) {
     throw new Error(`API returned status ${res.status}`);
   }
